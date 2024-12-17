@@ -17,7 +17,7 @@ pub struct Cli {
     /// Input tumor bam file with index
     #[arg(short, long, help_heading = Some("I/O Options"))]
     pub tumor: String,
-    /// input region, format: chr:start-end
+    /// input vcf file
     #[arg(short, long, help_heading = Some("I/O Options"))]
     pub vcf: String,
     /// Output file
@@ -35,7 +35,7 @@ pub struct Cli {
     pub min_mapq: u8,
 
     /// Threads
-    #[arg(default_value = "1", short, long)]
+    #[arg(default_value = "1", short = '@', long)]
     pub threads: usize,
 }
 

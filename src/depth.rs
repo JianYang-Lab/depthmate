@@ -19,6 +19,9 @@ pub struct PilePosition {
     pub other_depth: usize,
     pub indel_n_lowq: usize,
     pub tntype: String,
+    pub vaf: f64,
+    // pub barcode: String,
+    // pub umi: String,
 }
 
 pub trait Position: Default {
@@ -47,6 +50,26 @@ impl PilePosition {
         ref_base: u8,
         alt_base: u8,
     ) {
+        // // get UMI and barcode
+        // // barcode tag: CB
+        // // UMI tag: UB
+
+        // let barcode = match record.aux(b"CB") {
+        //     ResultOk(bam::record::Aux::String(b)) => b.to_string(),
+        //     _ => "NA".to_string(),
+        // };
+
+        // let umi = match record.aux(b"UB") {
+        //     ResultOk(bam::record::Aux::String(b)) => b.to_string(),
+        //     _ => "NA".to_string(),
+        // };
+
+        // self.barcode.push_str(&barcode);
+        // self.umi.push_str(&umi);
+
+        // self.barcode.push(',');
+        // self.umi.push(',');
+
         if !read_filter.filter_read(&record, Some(alignment)) {
             self.all_depth -= 1;
             self.indel_n_lowq += 1;
@@ -77,6 +100,9 @@ impl PilePosition {
                 self.indel_n_lowq += 1;
             }
         }
+
+        // calculate VAF
+        self.vaf = self.alt_depth as f64 / self.all_depth as f64;
     }
 
     #[inline]
@@ -216,26 +242,42 @@ impl<F: ReadFilter + Send> DepthProcessor<F> {
         pos: u32,
         ref_base: u8,
         alt_base: u8,
+        tntype: u8,
     ) -> Result<Vec<PilePosition>> {
         let mut output = Vec::new();
-        self.process_region(
-            chrom,
-            pos,
-            self.tumor_reads.clone(),
-            ref_base,
-            alt_base,
-            84,
-            &mut output,
-        )?;
-        self.process_region(
-            chrom,
-            pos,
-            self.normal_reads.clone(),
-            ref_base,
-            alt_base,
-            78,
-            &mut output,
-        )?;
+        match tntype {
+            84 => self.process_region(
+                chrom,
+                pos,
+                self.tumor_reads.clone(),
+                ref_base,
+                alt_base,
+                tntype,
+                &mut output,
+            )?,
+            78 => self.process_region(
+                chrom,
+                pos,
+                self.normal_reads.clone(),
+                ref_base,
+                alt_base,
+                tntype,
+                &mut output,
+            )?,
+            _ => {
+                anyhow::bail!("Invalid tntype");
+            }
+        }
+
+        // self.process_region(
+        //     chrom,
+        //     pos,
+        //     self.normal_reads.clone(),
+        //     ref_base,
+        //     alt_base,
+        //     78,
+        //     &mut output,
+        // )?;
 
         Ok(output)
     }
