@@ -22,3 +22,5 @@ depthmate --normal normal.bam --tumor tumor.bam --vcf regions.vcf.gz -@ 8 -o out
 ## contribution
 
 please feel free to open an issue or pull request.
+
+## edit by dingyi
