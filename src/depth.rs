@@ -20,7 +20,7 @@ pub struct PilePosition {
     pub indel_n_lowq: usize,
     pub tntype: String,
     pub vaf: f64,
-    // pub barcode: String,
+    pub barcode: String,
     // pub umi: String,
 }
 
@@ -54,10 +54,10 @@ impl PilePosition {
         // // barcode tag: CB
         // // UMI tag: UB
 
-        // let barcode = match record.aux(b"CB") {
-        //     ResultOk(bam::record::Aux::String(b)) => b.to_string(),
-        //     _ => "NA".to_string(),
-        // };
+        let barcode = match record.aux(b"CB") {
+            Result::Ok(bam::record::Aux::String(b)) => b.to_string(),
+            _ => "NA".to_string(),
+        };
 
         // let umi = match record.aux(b"UB") {
         //     ResultOk(bam::record::Aux::String(b)) => b.to_string(),
@@ -91,6 +91,8 @@ impl PilePosition {
                 self.ref_depth += 1;
             } else if curr_base == alt_base {
                 self.alt_depth += 1;
+                self.barcode.push_str(&barcode);
+                self.barcode.push(',');
             } else {
                 self.other_depth += 1;
             }
